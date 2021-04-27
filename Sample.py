@@ -21,16 +21,36 @@ Depth_limit = 4
 INFINITY = float('inf')
 MINUS_INFINITY = float('-inf')
 
+
 # class state:
 #     def __init__(self):
 #         self.board = []
 #         self.move = (-1,-1)
 
 
-def evaluation_funcion(board, is_black):
+def check_middle(board , is_black):
 
-    
-    return 1
+    return
+
+def check_line_in_one_axis(board, is_black):
+
+    return
+
+def check_line_in_two_axis(board, is_black):
+
+    return
+
+def check_line_in_three_axis(board, is_black):
+
+    return
+
+def check_line_num(board , is_black):
+
+    return
+
+def evaluation_funcion(board, is_black):
+      
+    return check_line(board, is_black) + 0.01*check_middle(board, is_black)
         
 def make_actions(board):
     
