@@ -57,17 +57,17 @@ def make_actions(board):
     state_list = []
     index_dict = {}
 
-    for plane in board:
-        for i in range( len(plane) ):
-            for j in range( len( plane[i] ) ):
+    for l in range(len(boaard)):
+        for i in range( len(board[l]) ):
+            for j in range( len( board[l][i] ) ):
                 
                 if plane[i][j] == 0 and index_dict.get((i,j)) is None:
                     
                     new_board = copy.deepcopy(board)
                     if is_black:
-                        new_board[i][j] == 1
+                        new_board[l][i][j] == 1
                     else:
-                        new_board[i][j] == 2
+                        new_board[l][i][j] == 2
 
                     new_step = (i, j)
                     state_list.append( (new_board, new_step ))
