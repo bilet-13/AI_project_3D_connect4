@@ -16,8 +16,8 @@ import sys
     Step : single touple, Step = (r, c)
             r, c 表示要下棋子的座標位置 (row, column) (zero-base)
 '''
-COLOR = 1
-OP_COLOR = 2
+COLOR = 0
+OP_COLOR = 0
 Depth_limit = 4
 INFINITY = float('inf')
 MINUS_INFINITY = float('-inf')
@@ -28,10 +28,7 @@ point = {
 side_length = 6
 remain_path_proportion = 2/3
 
-# class state:
-#     def __init__(self):
-#         self.board = []
-#         self.move = (-1,-1)
+
 def init_board(flag = 'game'):
     board = []
     #state = {'l':0,'i':0,"j":0}
@@ -109,6 +106,9 @@ def compare_with_last_board(board):
     return None
 
 def update_line_in_one_axis(board, cell_pos):
+
+    global state_board
+
     line = 0
     score = 0
     info = [0, 0, 0] # blank, black, white
@@ -209,6 +209,8 @@ def update_line_in_one_axis(board, cell_pos):
     return score
 
 def update_line_in_two_axis(board, cell_pos):
+
+    global state_board
 
     line = 0
     score = 0
@@ -601,10 +603,11 @@ def alpha_beta_search(board, is_black, depth, alpha, beta):
 
             new_decision =  alpha_beta_search(board, not is_black, depth + 1, alpha, beta)
             
-            #*****************************new changed to negative
 
             set_step(new_step, board, is_black, False)
             update_state_board_and_value(board, (new_step[1],new_step[2]) )
+            # if COLOR == 2:
+            #     print("value: "+str(decision['value'])+" step: "+str((new_step[1],new_step[2])) )
 
             if new_decision['value'] < decision['value']:
                 decision = new_decision
@@ -614,10 +617,16 @@ def alpha_beta_search(board, is_black, depth, alpha, beta):
                 return decision
 
             beta = min(beta, decision['value'])
+        # if COLOR == 2:
+        #     print("min_value: "+str(decision['value'])+" step: "+str((new_step[1],new_step[2])) )
 
         return decision
 
 def GetStep(board, is_black):
+
+    global COLOR
+    global OP_COLOR
+
     if(is_black):
         COLOR = 1
         OP_COLOR = 2
