@@ -419,6 +419,7 @@ def update_line_in_two_axis(board, cell_pos):
 
     return score
 
+
 def update_state_board_and_value(board, step):
 
     i = step[0]
@@ -460,9 +461,128 @@ def inside(x, y):
     return True
 
 
-def check_line_in_three_axis(board, is_black):
 
-    return
+def check_line_in_three_axis(board):
+    line = 0
+    score = 0
+    info = [0, 0, 0] # blank, black, white
+    
+    diagonal = [[2,0], [1,1], [0,2]]
+    anti_diagonal = [[0,3], [1,4], [2,5]]    
+    diagonal_opposite = [[5,3], [4,4], [3,5]]
+    anti_diagonal_opposite = [[3,0], [4,1], [5,2]]
+    
+    for start_h in range(3):
+        for i, j in diagonal:
+            h = start_h
+            while inside(i, j):
+                if (h > 5 or h < 0): 
+                    break
+                
+                if(board[h][i][j] == COLOR):
+                    info[COLOR] += 1
+                    line += 1
+                elif(board[h][i][j] == 0):
+                    info[0] += 1
+                    line += 1
+                else:
+                    info[COLOR] = 0
+                    info[0] = 0
+                    line = 0
+                if(line == 4):
+                    score += point[info[COLOR]]
+                    info[board[h-3][i-3][j-3]] = max(info[board[h-3][i-3][j-3]]-1, 0)
+                    line = max(line-1, 0)
+                i += 1
+                j += 1
+                h += 1
+            info[COLOR] = 0
+            info[0] = 0
+            line = 0
+            
+        for i, j in anti_diagonal:
+            h = start_h
+            while inside(i, j):
+                if (h > 5 or h < 0): 
+                    break
+                
+                if(board[h][i][j] == COLOR):
+                    info[COLOR] += 1
+                    line += 1
+                elif(board[h][i][j] == 0):
+                    info[0] += 1
+                    line += 1
+                else:
+                    info[COLOR] = 0
+                    info[0] = 0
+                    line = 0
+                if(line == 4):
+                    score += point[info[COLOR]]
+                    info[board[h-3][i-3][j+3]] = max(info[board[h-3][i-3][j+3]]-1, 0)
+                    line = max(line-1, 0)
+                i += 1
+                j -= 1
+                h += 1
+            info[COLOR] = 0
+            info[0] = 0
+            line = 0
+            
+        for i, j in diagonal_opposite:
+            h = start_h
+            while inside(i, j):
+                if (h > 5 or h < 0): 
+                    break
+                
+                if(board[h][i][j] == COLOR):
+                    info[COLOR] += 1
+                    line += 1
+                elif(board[h][i][j] == 0):
+                    info[0] += 1
+                    line += 1
+                else:
+                    info[COLOR] = 0
+                    info[0] = 0
+                    line = 0
+                if(line == 4):
+                    score += point[info[COLOR]]
+                    info[board[h-3][i+3][j+3]] = max(info[board[h-3][i+3][j+3]]-1, 0)
+                    line = max(line-1, 0)
+                i -= 1
+                j -= 1
+                h += 1
+            info[COLOR] = 0
+            info[0] = 0
+            line = 0
+        
+        for i, j in anti_diagonal_opposite:
+            h = start_h
+            while inside(i, j):
+                if (h > 5 or h < 0): 
+                    break
+                
+                if(board[h][i][j] == COLOR):
+                    info[COLOR] += 1
+                    line += 1
+                elif(board[h][i][j] == 0):
+                    info[0] += 1
+                    line += 1
+                else:
+                    info[COLOR] = 0
+                    info[0] = 0
+                    line = 0
+                if(line == 4):
+                    score += point[info[COLOR]]
+                    info[board[h-3][i+3][j-3]] = max(info[board[h-3][i+3][j-3]]-1, 0)
+                    line = max(line-1, 0)
+                i -= 1
+                j += 1
+                h += 1
+            info[COLOR] = 0
+            info[0] = 0
+            line = 0
+        
+    return score
+
 
 # def check_line_num(board):
 
@@ -485,6 +605,7 @@ def Forward_pruning(board, step_list, is_black):
         val = evaluation_funcion(board)
         min_val = min(min_val , val)
         max_val = max(max_val, val)
+
 
         if bucket.get(val) is None:
             bucket[val] = []
@@ -509,6 +630,7 @@ def Forward_pruning(board, step_list, is_black):
             break
 
     return return_list
+
 
 def evaluation_funcion(board):
 
