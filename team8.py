@@ -18,11 +18,15 @@ import sys
 '''
 COLOR = 1
 OP_COLOR = 2
-Depth_limit = 3
+Depth_limit = 4
 INFINITY = float('inf')
 MINUS_INFINITY = float('-inf')
-point = [0, 1, 10, 100, 5000]
+#black_point = [0, 1, 10, 100, 5000]
+point = { 
+    1:[0, 1, 10, 100, 5000], 2:[0, -1, -10, -100, -5000]
+}
 side_length = 6
+remain_path_proportion = 2/3
 
 # class state:
 #     def __init__(self):
@@ -127,7 +131,7 @@ def update_line_in_one_axis(board, cell_pos):
             info[0] = 0
             line = 0
         if(line == 4):
-            tmp_point = point[info[COLOR]]
+            tmp_point = point[COLOR][info[COLOR]]
             score += tmp_point
 
 
@@ -155,7 +159,7 @@ def update_line_in_one_axis(board, cell_pos):
             info[0] = 0
             line = 0
         if(line == 4):
-            tmp_point = point[info[COLOR]]
+            tmp_point = point[COLOR][info[COLOR]]
             score += tmp_point
 
             difference += tmp_point - state_board[cell_layer][i-3][cell_column]['i']
@@ -182,7 +186,7 @@ def update_line_in_one_axis(board, cell_pos):
             info[0] = 0
             line = 0
         if(line == 4):
-            tmp_point = point[info[COLOR]]
+            tmp_point = point[COLOR][info[COLOR]]
             score += tmp_point
             #print('index '+str(h))
             #print('board '+str(state_board[1][cell_row][cell_column]['l']))
@@ -238,7 +242,7 @@ def update_line_in_two_axis(board, cell_pos):
             line = 0
         if(line == 4):
             
-            tmp_point = point[info[COLOR]]
+            tmp_point = point[COLOR][info[COLOR]]
             score += tmp_point
 
             difference += tmp_point - state_board[cell_layer][i-3][j-3]['dia_i&j']
@@ -269,7 +273,7 @@ def update_line_in_two_axis(board, cell_pos):
             info[0] = 0
             line = 0
         if(line == 4):
-            tmp_point = point[info[COLOR]]
+            tmp_point = point[COLOR][info[COLOR]]
             score += tmp_point
 
             difference += tmp_point - state_board[cell_layer][anti_i-3][anti_j-3]['anti_dia_i&j']
@@ -301,7 +305,7 @@ def update_line_in_two_axis(board, cell_pos):
             info[0] = 0
             line = 0
         if(line == 4):
-            tmp_point = point[info[COLOR]]
+            tmp_point = point[COLOR][info[COLOR]]
             score += tmp_point
 
             difference += tmp_point - state_board[h-3][cell_row][j-3]['dia_l&j']
@@ -331,7 +335,7 @@ def update_line_in_two_axis(board, cell_pos):
             info[0] = 0
             line = 0
         if(line == 4):
-            tmp_point = point[info[COLOR]]
+            tmp_point = point[COLOR][info[COLOR]]
             score += tmp_point
 
             difference += tmp_point - state_board[h-3][cell_row][j+3]['anti_dia_l&j']
@@ -362,7 +366,7 @@ def update_line_in_two_axis(board, cell_pos):
             info[0] = 0
             line = 0
         if(line == 4):
-            tmp_point  = point[info[COLOR]]
+            tmp_point  = point[COLOR][info[COLOR]]
             score += tmp_point
 
             difference += tmp_point - state_board[h-3][i-3][cell_column]['dia_l&i']
@@ -392,7 +396,7 @@ def update_line_in_two_axis(board, cell_pos):
             info[0] = 0
             line = 0
         if(line == 4):
-            tmp_point  = point[info[COLOR]]
+            tmp_point  = point[COLOR][info[COLOR]]
             score += tmp_point
 
             difference += tmp_point - state_board[h-3][i+3][cell_column]['anti_dia_l&i']
@@ -463,6 +467,47 @@ def check_line_in_three_axis(board, is_black):
 #     return state_value_in_one + check_line_in_two_axis(board)
 #     #return check_line_in_one_axis(board) + check_line_in_two_axis(board)
 
+def Forward_pruning(board, step_list, is_black):
+
+    min_val = INFINITY
+    max_val =  MINUS_INFINITY
+    bucket = {}
+    return_list = []
+    key_list = []
+
+    for step in step_list:
+
+        set_step(step, board, is_black, True)
+        update_state_board_and_value(board, (step[1],step[2]) )
+
+        val = evaluation_funcion(board)
+        min_val = min(min_val , val)
+        max_val = max(max_val, val)
+
+        if bucket.get(val) is None:
+            bucket[val] = []
+            bucket[val].append(step)
+            key_list.append(val)
+
+        else:
+            bucket[val].append(step)
+
+        set_step(step, board, is_black, False)
+        update_state_board_and_value(board, (step[1],step[2]) )
+
+    if is_black:
+        key_list.sort(reverse = True)
+    else:
+        key_list.sort()
+
+    for i in range(len(key_list)):
+        return_list.extend(bucket[key_list[i]])
+
+        if len(return_list) >= (len(step_list) * remain_path_proportion) :
+            break
+
+    return return_list
+
 def evaluation_funcion(board):
 
     return state_value_in_one + state_value_in_two
@@ -519,12 +564,15 @@ def alpha_beta_search(board, is_black, depth, alpha, beta):
     if is_black:
         decision['value'] = MINUS_INFINITY
 
-        for new_step in make_actions(board):
+        new_step_list = make_actions(board)
+        better_step_list = Forward_pruning(board, new_step_list, is_black)
+
+        for new_step in better_step_list:
 
             set_step(new_step, board, is_black, True)
             update_state_board_and_value(board, (new_step[1],new_step[2]) )
 
-            new_decision = alpha_beta_search(board, False, depth + 1, alpha, beta)
+            new_decision = alpha_beta_search(board, not is_black, depth + 1, alpha, beta)
 
             set_step(new_step, board, is_black, False)
             update_state_board_and_value(board, (new_step[1],new_step[2]) )
@@ -543,12 +591,17 @@ def alpha_beta_search(board, is_black, depth, alpha, beta):
     else :
         decision['value'] = INFINITY
 
-        for new_step in make_actions(board):
+        new_step_list = make_actions(board)
+        better_step_list = Forward_pruning(board, new_step_list, is_black)
+
+        for new_step in better_step_list:
 
             set_step(new_step, board, is_black, True)
             update_state_board_and_value(board, (new_step[1],new_step[2]) )
 
-            new_decision = alpha_beta_search(board, False, depth + 1, alpha, beta)
+            new_decision =  alpha_beta_search(board, not is_black, depth + 1, alpha, beta)
+            
+            #*****************************new changed to negative
 
             set_step(new_step, board, is_black, False)
             update_state_board_and_value(board, (new_step[1],new_step[2]) )
